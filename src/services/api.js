@@ -40,11 +40,10 @@ export const authAPI = {
       username: username, 
       password: password 
     }),
-  register: (username, password, wallet_address) => 
+  register: (username, password) => 
     api.post('/register', { 
       username: username, 
-      password: password, 
-      wallet_address: wallet_address 
+      password: password 
     }),
   getProfile: (userId) => api.get(`/profile/${userId}`),
 }

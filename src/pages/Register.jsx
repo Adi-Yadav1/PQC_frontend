@@ -9,7 +9,6 @@ export function Register() {
     username: '',
     password: '',
     confirmPassword: '',
-    wallet_address: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,35 +29,29 @@ export function Register() {
       return
     }
 
-    if (!formData.wallet_address) {
-      setError('Wallet address is required')
-      return
-    }
-
     setLoading(true)
     setError('')
     
     try {
       const response = await authAPI.register(
         formData.username,
-        formData.password,
-        formData.wallet_address
+        formData.password
       )
       
       // Check status code explicitly
       if (response.status === 200 || response.status === 201) {
-        const { user_id, message } = response.data
+        const { user_id, wallet_address, message } = response.data
         
-        // Store user data in localStorage
+        // Store user data in localStorage (wallet_address from backend)
         localStorage.setItem('user_id', user_id)
         localStorage.setItem('username', formData.username)
-        localStorage.setItem('wallet_address', formData.wallet_address)
+        localStorage.setItem('wallet_address', wallet_address)
         
         // Update auth context
         login({ 
           id: user_id, 
           username: formData.username, 
-          wallet_address: formData.wallet_address 
+          wallet_address: wallet_address 
         }, user_id)
         
         // Navigate to dashboard
@@ -69,11 +62,11 @@ export function Register() {
     } catch (err) {
       // Handle specific error statuses
       if (err.response?.status === 400) {
-        setError(err.response?.data?.message || 'Invalid registration data')
+        setError(err.response?.data?.error || 'Invalid registration data')
       } else if (err.response?.status === 409) {
         setError('Username already exists')
       } else {
-        setError(err.response?.data?.message || 'Registration failed. Please try again.')
+        setError(err.response?.data?.error || 'Registration failed. Please try again.')
       }
     } finally {
       setLoading(false)
@@ -98,19 +91,6 @@ export function Register() {
               onChange={handleChange}
               required
               placeholder="Choose a username"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="wallet_address">Wallet Address</label>
-            <input
-              type="text"
-              id="wallet_address"
-              name="wallet_address"
-              value={formData.wallet_address}
-              onChange={handleChange}
-              required
-              placeholder="Enter your wallet address"
             />
           </div>
 
