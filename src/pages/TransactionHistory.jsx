@@ -72,11 +72,41 @@ export function TransactionHistory() {
   if (loading) return <LoadingSpinner />
 
   const columns = [
-    { key: 'sender', label: 'From' },
-    { key: 'receiver', label: 'To' },
-    { key: 'amount', label: 'Amount' },
-    { key: 'blockIndex', label: 'Block' },
-    { key: 'timestamp', label: 'Time', render: (val) => new Date(val).toLocaleString() },
+    { 
+      key: 'sender', 
+      label: 'From', 
+      render: (val, row) => (
+        <div className="user-cell" title={row.sender_address}>
+          <strong>{val}</strong>
+          {row.sender_address && (
+            <small style={{display: 'block', opacity: 0.7}}>
+              {row.sender_address.substring(0, 8)}...{row.sender_address.substring(row.sender_address.length - 6)}
+            </small>
+          )}
+        </div>
+      )
+    },
+    { 
+      key: 'receiver', 
+      label: 'To', 
+      render: (val, row) => (
+        <div className="user-cell" title={row.receiver_address}>
+          <strong>{val}</strong>
+          {row.receiver_address && (
+            <small style={{display: 'block', opacity: 0.7}}>
+              {row.receiver_address.substring(0, 8)}...{row.receiver_address.substring(row.receiver_address.length - 6)}
+            </small>
+          )}
+        </div>
+      )
+    },
+    { 
+      key: 'amount', 
+      label: 'Amount', 
+      render: (val) => `${val} PKC`
+    },
+    { key: 'blockIndex', label: 'Block #' },
+    { key: 'timestamp', label: 'Time', render: (val) => new Date(val * 1000).toLocaleString() },
   ]
 
   return (
