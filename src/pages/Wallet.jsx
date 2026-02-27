@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { blockchainAPI } from '../services/api'
 import { Card } from '../components/Card'
@@ -7,9 +7,26 @@ import '../styles/pages.css'
 export function Wallet() {
   const { user } = useAuth()
   const [formData, setFormData] = useState({ sender: user?.wallet_address || '', receiver: '', amount: '' })
+  const [balance, setBalance] = useState(0)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [copied, setCopied] = useState(false)
+
+  // Load balance on mount
+  useEffect(() => {
+    if (user?.id) {
+      loadBalance()
+    }
+  }, [user])
+
+  const loadBalance = async () => {
+    try {
+      const response = await blockchainAPI.getBalance(user.id)
+      setBalance(response.data.balance)
+    } catch (error) {
+      console.error('Failed to load balance:', error)
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -28,15 +45,17 @@ export function Wallet() {
     setMessage('')
 
     try {
-      await blockchainAPI.addTransaction(
+      const response = await blockchainAPI.sendTransaction(
         formData.sender,
         formData.receiver,
-        parseFloat(formData.amount)
+        parseFloat(formData.amount),
+        user?.id
       )
-      setMessage('Transaction added successfully')
+      setMessage(`Transaction successful! New balance: ${response.data.new_balance}`)
+      setBalance(response.data.new_balance)
       setFormData(prev => ({ ...prev, receiver: '', amount: '' }))
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Transaction failed')
+      setMessage(error.response?.data?.error || 'Transaction failed')
     } finally {
       setLoading(false)
     }
@@ -48,9 +67,11 @@ export function Wallet() {
 
     try {
       const response = await blockchainAPI.mineBlock()
-      setMessage(`Block mined! Hash: ${response.data.block?.hash}`)
+      setMessage(`Block mined! Hash: ${response.data.block?.hash?.substring(0, 16)}...`)
+      // Reload balance after mining
+      await loadBalance()
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Mining failed')
+      setMessage(error.response?.data?.error || 'Mining failed')
     } finally {
       setLoading(false)
     }
@@ -79,11 +100,16 @@ export function Wallet() {
             <label>Username:</label>
             <p>{user?.username}</p>
           </div>
+
+          <div className="wallet-info-item balance-display">
+            <label>Current Balance:</label>
+            <p className="balance-amount">{balance.toFixed(2)} PKC</p>
+          </div>
         </Card>
 
         <Card title="Send Transaction">
           {message && (
-            <div className={`alert ${message.includes('failed') ? 'alert-error' : 'alert-success'}`}>
+            <div className={`alert ${message.includes('failed') || message.includes('Insufficient') ? 'alert-error' : 'alert-success'}`}>
               {message}
             </div>
           )}
@@ -115,7 +141,7 @@ export function Wallet() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="amount">Amount</label>
+              <label htmlFor="amount">Amount (Available: {balance.toFixed(2)} PKC)</label>
               <input
                 type="number"
                 id="amount"
@@ -124,6 +150,7 @@ export function Wallet() {
                 onChange={handleChange}
                 placeholder="Enter amount"
                 step="0.01"
+                max={balance}
                 required
               />
             </div>
@@ -131,7 +158,7 @@ export function Wallet() {
             <button
               type="submit"
               className="btn btn-primary btn-block"
-              disabled={loading}
+              disabled={loading || balance <= 0}
             >
               {loading ? 'Processing...' : 'Send Transaction'}
             </button>

@@ -163,6 +163,20 @@
   margin: 0;
 }
 
+.balance-display {
+  padding: 1rem;
+  background-color: var(--bg-darker);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--success);
+  margin-top: 1rem;
+}
+
+.balance-amount {
+  font-size: 1.5rem;
+  color: var(--success) !important;
+  font-weight: bold;
+}
+
 .mining-info {
   color: var(--text-secondary);
   margin-bottom: 1.5rem;

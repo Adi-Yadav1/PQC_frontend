@@ -51,12 +51,20 @@ export const authAPI = {
 export const blockchainAPI = {
   getChain: () => api.get('/chain'),
   verifyChain: () => api.get('/verify'),
+  sendTransaction: (sender, receiver, amount, userId) =>
+    api.post('/send_transaction', { 
+      sender: sender, 
+      receiver: receiver, 
+      amount: amount,
+      user_id: userId
+    }),
   addTransaction: (sender, receiver, amount) =>
     api.post('/add_transaction', { 
       sender: sender, 
       receiver: receiver, 
       amount: amount 
     }),
+  getBalance: (userId) => api.get(`/balance/${userId}`),
   mineBlock: () => api.post('/mine'),
 }
 
