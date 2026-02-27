@@ -60,13 +60,16 @@ export function Register() {
         setError('Unexpected response from server')
       }
     } catch (err) {
+      console.error('Registration error:', err)
       // Handle specific error statuses
       if (err.response?.status === 400) {
         setError(err.response?.data?.error || 'Invalid registration data')
       } else if (err.response?.status === 409) {
         setError('Username already exists')
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error)
       } else {
-        setError(err.response?.data?.error || 'Registration failed. Please try again.')
+        setError('Registration failed. Please try again.')
       }
     } finally {
       setLoading(false)

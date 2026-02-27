@@ -59,11 +59,14 @@ export function Login() {
         setError('Unexpected response from server')
       }
     } catch (err) {
+      console.error('Login error:', err)
       // Handle 401 and other errors
       if (err.response?.status === 401) {
         setError('Invalid username or password')
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error)
       } else {
-        setError(err.response?.data?.message || 'Login failed. Please try again.')
+        setError('Login failed. Please check your credentials and try again.')
       }
     } finally {
       setLoading(false)
