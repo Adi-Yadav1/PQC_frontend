@@ -4,8 +4,14 @@ import { authAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import '../styles/pages.css'
 
+// Email validation function
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
 export function Login() {
-  const [formData, setFormData] = useState({ username: '', password: '' })
+  const [formData, setFormData] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -22,8 +28,22 @@ export function Login() {
     setLoading(true)
     setError('')
     
+    // Validate email
+    if (!formData.email) {
+      setError('Email is required')
+      setLoading(false)
+      return
+    }
+    
+    if (!validateEmail(formData.email)) {
+      setError('Please enter a valid email address (e.g., user@gmail.com)')
+      setLoading(false)
+      return
+    }
+    
     try {
-      const response = await authAPI.login(formData.username, formData.password)
+      // Backend authenticates using username/password; we use email as username.
+      const response = await authAPI.login(formData.email, formData.password)
       
       // Check status code explicitly
       if (response.status === 200) {
@@ -36,21 +56,24 @@ export function Login() {
           
           // Store complete user data
           localStorage.setItem('user_id', user_id)
-          localStorage.setItem('username', formData.username)
+          localStorage.setItem('email', formData.email)
+          localStorage.setItem('username', formData.email)
           localStorage.setItem('wallet_address', walletAddress)
           
           // Update auth context
           login({ 
             id: user_id, 
-            username: formData.username, 
+            username: formData.email,
+            email: formData.email,
             wallet_address: walletAddress 
           }, user_id)
         } catch (profileErr) {
           // If profile fetch fails, login without wallet_address
           localStorage.setItem('user_id', user_id)
-          localStorage.setItem('username', formData.username)
+          localStorage.setItem('email', formData.email)
+          localStorage.setItem('username', formData.email)
           
-          login({ id: user_id, username: formData.username }, user_id)
+          login({ id: user_id, username: formData.email, email: formData.email }, user_id)
         }
         
         // Navigate to dashboard
@@ -82,15 +105,15 @@ export function Login() {
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="email">Email</label>
             <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               required
-              placeholder="Enter your username"
+              placeholder="Enter your email (e.g., user@gmail.com)"
             />
           </div>
 

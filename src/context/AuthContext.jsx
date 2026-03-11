@@ -25,10 +25,11 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = (userData, userId) => {
+    const resolvedUsername = userData.username || userData.email || ''
     setUser(userData)
     setToken(userId) // Use user_id as token for auth check
     localStorage.setItem('user_id', userId)
-    localStorage.setItem('username', userData.username)
+    localStorage.setItem('username', resolvedUsername)
     if (userData.wallet_address) {
       localStorage.setItem('wallet_address', userData.wallet_address)
     }

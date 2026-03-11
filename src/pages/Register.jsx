@@ -4,9 +4,17 @@ import { authAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import '../styles/pages.css'
 
+// Email validation function
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
 export function Register() {
   const [formData, setFormData] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
+    email: '',
     password: '',
     confirmPassword: '',
   })
@@ -24,6 +32,17 @@ export function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
+    // Validate email
+    if (!formData.email) {
+      setError('Email is required')
+      return
+    }
+    
+    if (!validateEmail(formData.email)) {
+      setError('Please enter a valid email address (e.g., user@gmail.com)')
+      return
+    }
+    
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return
@@ -33,10 +52,8 @@ export function Register() {
     setError('')
     
     try {
-      const response = await authAPI.register(
-        formData.username,
-        formData.password
-      )
+      // Backend register expects username/password; we use email as username.
+      const response = await authAPI.register(formData.email, formData.password)
       
       // Check status code explicitly
       if (response.status === 200 || response.status === 201) {
@@ -44,13 +61,19 @@ export function Register() {
         
         // Store user data in localStorage (wallet_address from backend)
         localStorage.setItem('user_id', user_id)
-        localStorage.setItem('username', formData.username)
+        localStorage.setItem('email', formData.email)
+        localStorage.setItem('username', formData.email)
+        localStorage.setItem('firstName', formData.firstName)
+        localStorage.setItem('lastName', formData.lastName)
         localStorage.setItem('wallet_address', wallet_address)
         
         // Update auth context
         login({ 
           id: user_id, 
-          username: formData.username, 
+          username: formData.email,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email, 
           wallet_address: wallet_address 
         }, user_id)
         
@@ -85,15 +108,41 @@ export function Register() {
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="firstName">First Name</label>
             <input
               type="text"
-              id="username"
-              name="username"
-              value={formData.username}
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
               onChange={handleChange}
               required
-              placeholder="Choose a username"
+              placeholder="Enter your first name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+              placeholder="Enter your last name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="Enter your email (e.g., user@gmail.com)"
             />
           </div>
 
