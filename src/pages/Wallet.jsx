@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
+import { toast } from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
-import { blockchainAPI } from '../services/api'
+import { blockchainAPI, getApiErrorMessage } from '../services/api'
 import { Card } from '../components/Card'
 import '../styles/pages.css'
 
@@ -24,7 +25,7 @@ export function Wallet() {
       const response = await blockchainAPI.getBalance(user.id)
       setBalance(response.data.balance)
     } catch (error) {
-      console.error('Failed to load balance:', error)
+      toast.error(getApiErrorMessage(error, 'Failed to load balance'))
     }
   }
 
@@ -52,10 +53,11 @@ export function Wallet() {
         user?.id
       )
       setMessage(`Transaction successful! New balance: ${response.data.new_balance}`)
+      toast.success('Transaction completed successfully')
       setBalance(response.data.new_balance)
       setFormData(prev => ({ ...prev, receiver: '', amount: '' }))
     } catch (error) {
-      setMessage(error.response?.data?.error || 'Transaction failed')
+      setMessage(getApiErrorMessage(error, 'Transaction failed'))
     } finally {
       setLoading(false)
     }
@@ -68,10 +70,11 @@ export function Wallet() {
     try {
       const response = await blockchainAPI.mineBlock()
       setMessage(`Block mined! Hash: ${response.data.block?.hash?.substring(0, 16)}...`)
+      toast.success('Mining completed successfully')
       // Reload balance after mining
       await loadBalance()
     } catch (error) {
-      setMessage(error.response?.data?.error || 'Mining failed')
+      setMessage(getApiErrorMessage(error, 'Mining failed'))
     } finally {
       setLoading(false)
     }
@@ -90,6 +93,7 @@ export function Wallet() {
               <button
                 onClick={handleCopyAddress}
                 className="btn btn-secondary btn-sm"
+                aria-label="Copy wallet address"
               >
                 {copied ? '✓ Copied' : 'Copy'}
               </button>
@@ -159,6 +163,7 @@ export function Wallet() {
               type="submit"
               className="btn btn-primary btn-block"
               disabled={loading || balance <= 0}
+              aria-label="Submit transaction"
             >
               {loading ? 'Processing...' : 'Send Transaction'}
             </button>
@@ -174,6 +179,7 @@ export function Wallet() {
             onClick={handleMineBlock}
             className="btn btn-success btn-block"
             disabled={loading}
+            aria-label="Mine a new block"
           >
             {loading ? 'Mining...' : '⛏️ Mine Block'}
           </button>

@@ -42,25 +42,20 @@ export function Login() {
     }
     
     try {
-      // Backend authenticates using username/password; we use email as username.
       const response = await authAPI.login(formData.email, formData.password)
       
-      // Check status code explicitly
       if (response.status === 200) {
-        const { user_id, message } = response.data
+        const { user_id } = response.data
         
-        // Try to fetch user profile to get wallet_address
         try {
           const profileRes = await authAPI.getProfile(user_id)
           const walletAddress = profileRes.data?.wallet_address || ''
           
-          // Store complete user data
           localStorage.setItem('user_id', user_id)
           localStorage.setItem('email', formData.email)
           localStorage.setItem('username', formData.email)
           localStorage.setItem('wallet_address', walletAddress)
           
-          // Update auth context
           login({ 
             id: user_id, 
             username: formData.email,
@@ -68,7 +63,6 @@ export function Login() {
             wallet_address: walletAddress 
           }, user_id)
         } catch (profileErr) {
-          // If profile fetch fails, login without wallet_address
           localStorage.setItem('user_id', user_id)
           localStorage.setItem('email', formData.email)
           localStorage.setItem('username', formData.email)
@@ -76,14 +70,11 @@ export function Login() {
           login({ id: user_id, username: formData.email, email: formData.email }, user_id)
         }
         
-        // Navigate to dashboard
         navigate('/dashboard')
       } else {
         setError('Unexpected response from server')
       }
     } catch (err) {
-      console.error('Login error:', err)
-      // Handle 401 and other errors
       if (err.response?.status === 401) {
         setError('Invalid username or password')
       } else if (err.response?.data?.error) {
@@ -113,7 +104,7 @@ export function Login() {
               value={formData.email}
               onChange={handleChange}
               required
-              placeholder="Enter your email (e.g., user@gmail.com)"
+              placeholder="Enter your account email"
             />
           </div>
 

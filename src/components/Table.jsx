@@ -1,6 +1,7 @@
+import { memo } from 'react'
 import '../styles/components.css'
 
-export function Table({ columns, data, onRowClick }) {
+export const Table = memo(function Table({ columns, data, onRowClick }) {
   if (data.length === 0) {
     return (
       <div className="table-container">
@@ -11,7 +12,7 @@ export function Table({ columns, data, onRowClick }) {
 
   return (
     <div className="table-container">
-      <table className="data-table">
+      <table className="data-table" role="table">
         <thead>
           <tr>
             {columns.map((col) => (
@@ -24,7 +25,16 @@ export function Table({ columns, data, onRowClick }) {
             <tr
               key={idx}
               onClick={() => onRowClick?.(row)}
+              onKeyDown={(event) => {
+                if (!onRowClick) return
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  onRowClick(row)
+                }
+              }}
               className={onRowClick ? 'clickable' : ''}
+              tabIndex={onRowClick ? 0 : undefined}
+              aria-label={onRowClick ? `Open details for row ${idx + 1}` : undefined}
             >
               {columns.map((col) => (
                 <td key={col.key}>
@@ -37,6 +47,6 @@ export function Table({ columns, data, onRowClick }) {
       </table>
     </div>
   )
-}
+})
 
 export default Table

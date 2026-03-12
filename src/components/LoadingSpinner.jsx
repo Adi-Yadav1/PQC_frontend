@@ -1,10 +1,10 @@
 import '../styles/components.css'
 
-export function LoadingSpinner() {
+export function LoadingSpinner({ message = 'Loading...', size = 'md' }) {
   return (
-    <div className="spinner-container">
-      <div className="spinner"></div>
-      <p>Loading...</p>
+    <div className="spinner-container" role="status" aria-live="polite" aria-label={message}>
+      <div className={`spinner spinner-${size}`}></div>
+      <p>{message}</p>
     </div>
   )
 }

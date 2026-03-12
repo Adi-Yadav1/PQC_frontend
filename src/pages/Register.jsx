@@ -4,17 +4,9 @@ import { authAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import '../styles/pages.css'
 
-// Email validation function
-const validateEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
 export function Register() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
+    username: '',
     password: '',
     confirmPassword: '',
   })
@@ -31,15 +23,13 @@ export function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // Validate email
-    if (!formData.email) {
-      setError('Email is required')
+    if (!formData.username.trim()) {
+      setError('Username is required')
       return
     }
-    
-    if (!validateEmail(formData.email)) {
-      setError('Please enter a valid email address (e.g., user@gmail.com)')
+
+    if (formData.username.trim().length < 3) {
+      setError('Username must be at least 3 characters')
       return
     }
     
@@ -52,39 +42,26 @@ export function Register() {
     setError('')
     
     try {
-      // Backend register expects username/password; we use email as username.
-      const response = await authAPI.register(formData.email, formData.password)
+      const response = await authAPI.register(formData.username.trim(), formData.password)
       
-      // Check status code explicitly
       if (response.status === 200 || response.status === 201) {
-        const { user_id, wallet_address, message } = response.data
+        const { user_id, wallet_address } = response.data
         
-        // Store user data in localStorage (wallet_address from backend)
         localStorage.setItem('user_id', user_id)
-        localStorage.setItem('email', formData.email)
-        localStorage.setItem('username', formData.email)
-        localStorage.setItem('firstName', formData.firstName)
-        localStorage.setItem('lastName', formData.lastName)
+        localStorage.setItem('username', formData.username.trim())
         localStorage.setItem('wallet_address', wallet_address)
         
-        // Update auth context
         login({ 
           id: user_id, 
-          username: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email, 
+          username: formData.username.trim(),
           wallet_address: wallet_address 
         }, user_id)
         
-        // Navigate to dashboard
         navigate('/dashboard')
       } else {
         setError('Unexpected response from server')
       }
     } catch (err) {
-      console.error('Registration error:', err)
-      // Handle specific error statuses
       if (err.response?.status === 400) {
         setError(err.response?.data?.error || 'Invalid registration data')
       } else if (err.response?.status === 409) {
@@ -108,41 +85,15 @@ export function Register() {
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="firstName">First Name</label>
+            <label htmlFor="username">Username</label>
             <input
               type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
               required
-              placeholder="Enter your first name"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="lastName">Last Name</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              placeholder="Enter your last name"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="Enter your email (e.g., user@gmail.com)"
+              placeholder="Choose a unique username"
             />
           </div>
 

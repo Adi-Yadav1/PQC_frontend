@@ -1,16 +1,14 @@
 # PQC Blockchain Wallet - Frontend
 
-A modern React application for interacting with a custom post-quantum cryptography blockchain wallet. Built with React, Vite, and Axios.
+A production-style React frontend for the Post-Quantum Secure Blockchain Wallet Platform. Built with React, Vite, React Router, Axios, and Recharts.
 
 ## Features
 
-- 🔐 **User Authentication** - Register and login with secure sessions
-- ⛓️ **Blockchain Dashboard** - View blockchain status, blocks, and transactions
-- 💼 **Wallet Management** - Send transactions and mine blocks
-- 🔍 **Advanced Search** - Search by block index, hash, or wallet address
-- 📊 **Transaction History** - Filter and view all transactions
-- 🌙 **Dark Mode Theme** - Professional dark UI with responsive design
-- 📱 **Fully Responsive** - Works on desktop, tablet, and mobile
+- Multi-page product navigation with protected routes
+- Home, Dashboard, Explorer, Transactions, Network, Demo Control, Metrics, and Cryptography pages
+- Public and private transaction support (ML-KEM encrypted payload path)
+- Blockchain verification and live operational visibility
+- Responsive cybersecurity dashboard styling with subtle animation
 
 ## Tech Stack
 
@@ -18,6 +16,7 @@ A modern React application for interacting with a custom post-quantum cryptograp
 - **Vite** - Build tool and dev server
 - **React Router v6** - Client-side routing
 - **Axios** - HTTP client for API calls
+- **Recharts** - Metrics visualizations
 - **Modern CSS** - Dark theme with custom properties
 
 ## Project Structure
@@ -27,25 +26,37 @@ src/
 ├── App.jsx                 # Main app with routing
 ├── main.jsx               # Entry point
 ├── pages/
-│   ├── Dashboard.jsx      # Blockchain overview
-│   ├── Login.jsx          # Login page
-│   ├── Register.jsx       # Registration page
-│   ├── Wallet.jsx         # Wallet management
-│   ├── BlockDetails.jsx   # Single block view
-│   ├── TransactionHistory.jsx  # Transaction list
-│   └── Search.jsx         # Global search
+│   ├── Home.jsx
+│   ├── Dashboard.jsx
+│   ├── Login.jsx
+│   ├── Register.jsx
+│   ├── Explorer.jsx
+│   ├── TransactionHistory.jsx
+│   ├── Network.jsx
+│   ├── DemoControl.jsx
+│   ├── Metrics.jsx
+│   ├── CryptographyInfo.jsx
+│   ├── QuantumThreat.jsx
+│   ├── Wallet.jsx
+│   ├── BlockDetails.jsx
+│   └── Search.jsx
 ├── components/
-│   ├── Navbar.jsx         # Top navigation
-│   ├── Card.jsx           # Reusable card component
-│   ├── Table.jsx          # Data table
-│   ├── LoadingSpinner.jsx # Loading indicator
-│   ├── StatusBadge.jsx    # Status display
-│   └── ProtectedRoute.jsx # Auth-protected routes
+│   ├── Navbar.jsx
+│   ├── Card.jsx
+│   ├── Table.jsx
+│   ├── LoadingSpinner.jsx
+│   ├── StatusBadge.jsx
+│   ├── QuantumAttackDiagram.jsx
+│   ├── NetworkGraph.jsx
+│   ├── RevealSection.jsx
+│   └── ProtectedRoute.jsx
 ├── context/
-│   ├── AuthContext.jsx    # Authentication state
-│   └── BlockchainContext.jsx # Blockchain state
+│   ├── AuthContext.jsx
+│   └── BlockchainContext.jsx
+├── hooks/
+│   └── useRevealOnScroll.js
 ├── services/
-│   └── api.js             # Axios configuration and API calls
+│   └── api.js
 └── styles/
     ├── index.css          # Global styles
     ├── components.css     # Component styles
@@ -69,7 +80,7 @@ src/
    npm run dev
    ```
 
-The application will open at `http://localhost:3000`
+The application will open at http://localhost:5173
 
 ## Available Scripts
 
@@ -79,10 +90,7 @@ The application will open at `http://localhost:3000`
 
 ## API Integration
 
-The frontend connects to the backend API at:
-```
-https://he-future-proof-digital-wallet.onrender.com
-```
+The frontend connects to the backend API using VITE_API_BASE_URL.
 
 ### Available Endpoints
 
@@ -92,10 +100,22 @@ https://he-future-proof-digital-wallet.onrender.com
 - `GET /profile/<user_id>` - Get user profile
 
 **Blockchain:**
-- `GET /chain` - Get all blocks
-- `GET /verify` - Verify blockchain validity
-- `POST /add_transaction` - Add new transaction
-- `POST /mine` - Mine new block
+- `POST /send_transaction`
+- `POST /private_transaction`
+- `POST /mine`
+- `GET /chain`
+- `GET /blocks`
+- `GET /transactions/<wallet_address>`
+- `GET /balance/<wallet_address>`
+- `GET /verify`
+- `GET /node_info`
+- `GET /network`
+- `GET /network_metrics`
+- `GET /crypto_info`
+- `POST /reset_network`
+- `POST /simulate_transactions`
+- `POST /mine_now`
+- `POST /run_demo`
 
 ## Authentication Flow
 
@@ -117,29 +137,85 @@ The application uses CSS custom properties for theming. All colors are defined i
 
 ## Features in Detail
 
-### Dashboard
-- Displays total blocks and transactions
-- Shows blockchain status (valid/invalid)
-- Lists latest blocks and transactions
-- Network status indicator
+## Route Map
 
-### Wallet
-- Display wallet address with copy button
-- Send transactions to other wallets
-- Mine blocks to confirm transactions
-- Transaction status feedback
+- / (Home)
+- /login
+- /register
+- /dashboard
+- /explorer and /blockchain-explorer
+- /transactions
+- /network
+- /demo-control
+- /metrics
+- /cryptography-info
+- /quantum-threat
 
-### Search
-- Search blocks by index
-- Search blocks by hash
-- Search wallet addresses (finds in transactions)
-- Click blocks to view details
+## Environment Variable
 
-### Transaction History
-- Table of all transactions
-- Filter by sender or receiver
-- Shows transaction amounts and timestamps
-- View which block contains each transaction
+- VITE_API_BASE_URL
+   - Example: https://your-backend.onrender.com
+
+If omitted, the app defaults to http://127.0.0.1:5000.
+
+## Production Hardening Summary
+
+- Route-level code splitting enabled via `React.lazy` + `Suspense`
+- Global route `ErrorBoundary` added to prevent full app crash
+- Centralized API error handling for `401`, network failures, and `5xx` responses
+- Toast notifications integrated using `react-hot-toast`
+- Loading spinners added for transactions, network stats, explorer, and metrics charts
+- Metadata and OpenGraph tags added on home page with `react-helmet`
+- Performance improvements with `React.memo`, `useMemo`, and Vite manual chunking
+- Keyboard focus visibility and ARIA labels improved for controls
+
+## Local Development (Frontend + Backend)
+
+1. Start backend from project root:
+   ```bash
+   python main.py --port 5000 --presentation
+   ```
+2. In another terminal, run frontend:
+   ```bash
+   cd PQC_frontend
+   npm install
+   npm run dev
+   ```
+3. Open:
+   - Frontend: `http://127.0.0.1:5173`
+   - Backend API: `http://127.0.0.1:5000`
+
+## Frontend Deployment
+
+1. Set environment variable:
+   - `VITE_API_BASE_URL=https://your-backend-domain`
+2. Build production assets:
+   ```bash
+   npm run build
+   ```
+3. Deploy the generated `dist/` folder to any static host (Vercel, Netlify, Render Static Site, Nginx).
+4. Configure SPA fallback to `index.html` for client-side routes.
+
+## Backend Deployment
+
+1. Deploy Python backend service (Render/VM/container) with dependencies from `requirements.txt`.
+2. Ensure backend allows CORS from frontend domain.
+3. Verify endpoints used by frontend:
+   - `/login`, `/register`, `/profile/<user_id>`
+   - `/send_transaction`, `/private_transaction`, `/mine`
+   - `/blocks`, `/explorer`, `/network`, `/network_metrics`, `/crypto_info`
+
+## Static Asset Optimization Notes
+
+- Vite build uses minification and CSS code splitting.
+- Manual chunking separates React/router/charts/vendor code for better cacheability.
+- No large raster images are bundled currently; when adding images, prefer WebP/AVIF and keep files compressed before import.
+
+## Auth Payload Contract
+
+- Login form UI uses email and password.
+- API payload remains backend-compatible: username and password.
+- Register form uses username and password.
 
 ### Block Details
 - Full block information (hash, timestamp, etc.)
@@ -181,15 +257,6 @@ The application is fully responsive:
 - Keep component styles in `components.css`
 - Page-specific styles in `pages.css`
 - Mobile-first responsive design approach
-
-## Future Enhancements
-
-- Real-time blockchain updates via WebSocket
-- Transaction filtering by date range
-- Export transaction history to CSV
-- QR code for wallet address
-- Multi-language support
-- Two-factor authentication
 
 ## License
 
