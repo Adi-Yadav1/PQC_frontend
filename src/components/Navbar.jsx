@@ -6,6 +6,8 @@ export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
+  const displayName = user?.displayName || user?.username || user?.email || 'User'
+
   const handleLogout = () => {
     logout()
     navigate('/login')
@@ -27,7 +29,7 @@ export function Navbar() {
               <Link to="/search" className="nav-link">Search</Link>
               
               <div className="nav-user">
-                <span className="user-name">{user?.username}</span>
+                <span className="user-name">{displayName}</span>
                 <button onClick={handleLogout} className="btn-logout">
                   Logout
                 </button>

@@ -28,6 +28,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('user_id')
       localStorage.removeItem('username')
+      localStorage.removeItem('email')
+      localStorage.removeItem('firstName')
+      localStorage.removeItem('lastName')
+      localStorage.removeItem('display_name')
       window.location.href = '/login'
     }
     return Promise.reject(error)
